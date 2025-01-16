@@ -89,14 +89,7 @@ public class MFSCNMeshBuffer {
     // MARK: - Init Mesh
     
     init(meshInfo: MFSKMeshInfo) throws {
-        
         self.meshInfo = meshInfo
-        
-        var heightClosure: MFSKHeightComputeBlock?
-        var bitmapClosure: MFSKGridComputeBlock?
-        
-        let height: CGFloat = meshInfo.heightMapInfo?.height ?? 1.0
-        
         try rebuildAllBuffers()
     }
     
@@ -163,9 +156,9 @@ public class MFSCNMeshBuffer {
     private func makeIndices() throws -> MFSCNElementDataBuffer<SideTrianglesIndice> {
         do {
             return try MFSCNElementDataBuffer<SideTrianglesIndice>(gridSize: squaresGridSize) {
-                index, gridLocation in
+                scanner, data in
                 
-                let squareLoc: (h: CInt, v: CInt) = gridLocation.asCInts
+                let squareLoc: (h: CInt, v: CInt) = scanner.cell.gridLocation.asCInts
                 let verticesGridSize = self.verticesGridSize.asCInt
                 
                 let verticesPerRow: CInt = verticesGridSize.columns
@@ -198,24 +191,27 @@ public class MFSCNMeshBuffer {
     func makeVerticesArray(heightFromHeightMap: @escaping MFSKHeightComputeBlock) throws -> MFSCNElementDataBuffer<SCNVector3> {
         do {
             let cellSize = meshInfo.gridInfo.cellSize
-            return try MFSCNElementDataBuffer<SCNVector3>(gridSize: verticesGridSize) { index, location in
+            return try MFSCNElementDataBuffer<SCNVector3>(gridSize: verticesGridSize) { scanner, data in
                 
                 var height: CGFloat = 0
-                let fractionalLoc = location.fractionalLocation(for: self.verticesGridSize)
+                
+                // TODO: Optimize to use cell computed values
+                
+                let fractionalLoc = scanner.cell.gridLocation.fractionalLocation(for: self.verticesGridSize)
 
                 if let info = self.meshInfo.heightMapInfo, let heightMapBitmap = info.heightMapBitmap {
                     if let comps = heightMapBitmap.colorComponents(fractionalX: fractionalLoc.x,
                                                                    fractionalY: fractionalLoc.y) {
                         let value = 1 - CGFloat( comps.r )
-                        height = heightFromHeightMap(value, location, fractionalLoc)
+                        height = heightFromHeightMap(value, scanner.cell.gridLocation, fractionalLoc)
                     }
                 }
                 else {
-                    height = heightFromHeightMap(0, location, fractionalLoc)
+                    height = heightFromHeightMap(0, scanner.cell.gridLocation, fractionalLoc)
                 }
                 
                 
-                let cgLocation = location.asCGFloats
+                let cgLocation = scanner.cell.gridLocation.asCGFloats
                 return SCNVector3(x: SCNFloat(cgLocation.h * cellSize.width),
                                   y: SCNFloat(cgLocation.v * cellSize.height),
                                   z: SCNFloat(height))
@@ -236,8 +232,8 @@ public class MFSCNMeshBuffer {
 
         do {
             
-            return try MFSCNElementDataBuffer<TexturePoint>(gridSize: verticesGridSize, cellSize: cellSize) { index, gridLocation in
-                let cellFractionalLocation = gridLocation.fractionalLocation(for: gridSize)
+            return try MFSCNElementDataBuffer<TexturePoint>(gridSize: verticesGridSize, cellSize: cellSize) { scanner, data in
+                let cellFractionalLocation = scanner.cell.gridLocation.fractionalLocation(for: gridSize)
                 let frac = 0.999999
                 let texLocX = cellFractionalLocation.x * frac// * textureScale.width * gridSizef.columns
                 let texLocY = (1.0 - cellFractionalLocation.y) * frac// * textureScale.height * gridSizef.rows

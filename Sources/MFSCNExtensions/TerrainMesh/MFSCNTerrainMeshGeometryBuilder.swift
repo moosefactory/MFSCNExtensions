@@ -86,6 +86,8 @@ public class MFSCNTerrainMeshGeometryBuilder {
         
         let geometry = SCNGeometry(sources: [vertices,normals,textureCoordinates],
                                    elements: [geometryElement])
+        
+        geometry.firstMaterial = makeMaterial()
         return geometry;
     }
     
@@ -94,14 +96,9 @@ public class MFSCNTerrainMeshGeometryBuilder {
         var info = meshInfo.mappingInfo
         
         if let computeTextureImage = info?.textureBitmap {
-            //let bitmap = try! ?.bitmap()
-
-            material.transparent.contents = computeTextureImage.makeImage()
-            material.diffuse.contents = PlatformImage(named: "Icon_512")
-
+            material.diffuse.contents = computeTextureImage
         }
-        else
-        if let baseName = info?.textureBaseName {
+        else if let baseName = info?.textureBaseName {
             material.loadWithTextureAccessor(MFSCNTextureAccessor(baseName: baseName))
         }
         material.isLitPerPixel = true

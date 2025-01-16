@@ -65,27 +65,33 @@ public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
     
     static func populateGrid(buffer: UnsafeMutableRawPointer,
                              gridSize: MFGridSize,
-                             elementProcessor: @escaping MFGridProcessorClosure<T>) {
+                             elementProcessor: @escaping MFDataGridProcessorClosure<T>) {
+        
         let bufferArray = buffer.bindMemory(to: T.self, capacity: gridSize.numberOfCells)
-        gridSize.scanner().scanIndexed { index, location in
-            bufferArray[index] = elementProcessor(index, location)
+        
+        gridSize.scanner().cellScan { scanner in
+            if let data = elementProcessor(scanner, nil) {
+                bufferArray[scanner.cell.index] = data
+            }
         }
     }
     
     static func populateGeoGrid(buffer: UnsafeMutableRawPointer,
                                       gridSize: MFGridSize,
                                       cellSize: CGSize,
-                                elementProcessor: @escaping MFGeoGridProcessorClosure<T>) {
+                                elementProcessor: @escaping MFDataGridProcessorClosure<T>) {
         let bufferArray = buffer.bindMemory(to: T.self, capacity: gridSize.numberOfCells)
-        gridSize.scanner().geometricIndexedScan(cellSize: cellSize) { index, cell in
-            bufferArray[index] = elementProcessor(index, cell)
+        gridSize.scanner().cellScan { scanner in
+            if let data = elementProcessor(scanner, nil) {
+                bufferArray[scanner.cell.index] = data
+            }
         }
     }
     
     /// Creates a data buffer by processing cell index,
     /// and location in grid
     
-    public init(gridSize: MFGridSize, elementProcessor: @escaping MFGridProcessorClosure<T>) throws {
+    public init(gridSize: MFGridSize, elementProcessor: @escaping MFDataGridProcessorClosure<T>) throws {
         self.numberOfElements = gridSize.numberOfCells
         
         let newBuffer: UnsafeMutableRawPointer = try allocateBuffer()
@@ -100,7 +106,7 @@ public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
     
     public init(gridSize: MFGridSize,
                 cellSize: CGSize,
-                elementProcessor: @escaping MFGeoGridProcessorClosure<T>) throws {
+                elementProcessor: @escaping MFDataGridProcessorClosure<T>) throws {
         self.numberOfElements = gridSize.numberOfCells
         
         let newBuffer: UnsafeMutableRawPointer = try allocateBuffer()
