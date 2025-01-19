@@ -65,10 +65,10 @@ public class MFSCNMeshBuffer {
     var normalsArray: [SCNVector3] { normals?.array ?? [] }
     
     /// The resolution of the grid, in number of cells
-    let meshInfo: MFSKMeshInfo
+    let meshInfo: MFSCNMeshInfo
     
     // Convenience accessors to the mesh info
-    var gridInfo: MFSKMeshGridInfo { meshInfo.gridInfo }
+    var gridInfo: MFSCNMeshGridInfo { meshInfo.gridInfo }
     
     // The grid size
     var squaresGridSize: MFGridSize { meshInfo.gridInfo.gridSize }
@@ -88,7 +88,7 @@ public class MFSCNMeshBuffer {
     
     // MARK: - Init Mesh
     
-    init(meshInfo: MFSKMeshInfo) throws {
+    init(meshInfo: MFSCNMeshInfo) throws {
         self.meshInfo = meshInfo
         try rebuildAllBuffers()
     }
@@ -96,11 +96,10 @@ public class MFSCNMeshBuffer {
     func rebuildAllBuffers() throws {
         let meshInfo = meshInfo
         
-        let heightFromHeightMap: MFSKHeightComputeBlock = meshInfo.heightMapInfo?.heightCompute
-        ?? {
-            value, _, _ in
-            return value * (meshInfo.heightMapInfo?.height ?? 1.0)
-        }
+        // If the height compute block is not set, we provide a simple block that returns
+        // a flat plane
+        let heightFromHeightMap: MFSCNHeightComputeBlock = meshInfo.heightMapInfo?.heightComputeBlock
+        ?? { _, _, _ in return 0.0 }
 
         vertices = try makeVerticesArray() { value, gridLoc, fracLoc in
             let double = value / Double(UInt8.max)
@@ -114,18 +113,22 @@ public class MFSCNMeshBuffer {
     
     var updating: Bool = false
     
+    /// This function recomputes the buffers
+    
     func updateBuffers() throws {
+        
         if updating {
             return
         }
+        
         updating = true
         let meshInfo = meshInfo
         
-        let heightFromHeightMap: MFSKHeightComputeBlock =
-        meshInfo.heightMapInfo?.heightCompute ?? {
-            value, _, _ in
-            return value * (meshInfo.heightMapInfo?.height ?? 1.0)
-        }
+        // If the height compute block is not set, we provide a simple block that returns
+        // a flat plane
+        let heightFromHeightMap: MFSCNHeightComputeBlock =
+        meshInfo.heightMapInfo?.heightComputeBlock
+        ?? { _, _, _ in return 0.0 }
 
         self.vertices = try makeVerticesArray() { value, gridLoc, fracLoc in
             let double = value / Double(UInt8.max)
@@ -184,11 +187,11 @@ public class MFSCNMeshBuffer {
     
     /// Allocates the vertices buffer
 
+//    func updateHeights(with HeightMap: CGContext) {
+//        
+//    }
     
-    func updateHeights(with HeightMap: CGContext) {
-    }
-    
-    func makeVerticesArray(heightFromHeightMap: @escaping MFSKHeightComputeBlock) throws -> MFSCNElementDataBuffer<SCNVector3> {
+    func makeVerticesArray(heightFromHeightMap: @escaping MFSCNHeightComputeBlock) throws -> MFSCNElementDataBuffer<SCNVector3> {
         do {
             let cellSize = meshInfo.gridInfo.cellSize
             return try MFSCNElementDataBuffer<SCNVector3>(gridSize: verticesGridSize) { scanner, data in
@@ -234,16 +237,17 @@ public class MFSCNMeshBuffer {
             
             return try MFSCNElementDataBuffer<TexturePoint>(gridSize: verticesGridSize, cellSize: cellSize) { scanner, data in
                 let cellFractionalLocation = scanner.cell.gridLocation.fractionalLocation(for: gridSize)
-                let frac = 0.999999
-                let texLocX = cellFractionalLocation.x * frac// * textureScale.width * gridSizef.columns
-                let texLocY = (1.0 - cellFractionalLocation.y) * frac// * textureScale.height * gridSizef.rows
+                let frac = 0.999
+                let texLocX = (cellFractionalLocation.x * frac)
+                let texLocY = (1.0 - cellFractionalLocation.y) * frac
                 var mx: Double = 1
                 var my: Double = 1
+                let texLocXMod = modf(texLocX, &mx)
+                let texLocYMod = modf(texLocY, &my)
                 let point = TexturePoint(
-                    x: CFloat(modf(texLocX, &mx)) ,
-                    y: CFloat(modf(texLocY, &my))
+                    x: CFloat(texLocXMod), //modf(texLocX, &mx)) ,
+                    y: CFloat(texLocYMod) //modf(texLocY, &my))
                 )
-                
                 return point
             }
         }

@@ -1,12 +1,12 @@
-/*--------------------------------------------------------------------------*/
-/*   /\/\/\__/\/\/\        MFSCTerrainMesh                                  */
-/*   \/\/\/..\/\/\/                                                         */
-/*        |  |             MooseFactory SceneKit Extensions                 */
-/*        (oo)                                                              */
-/* MooseFactory Software                                                    */
-/*--------------------------------------------------------------------------*/
-//  TerrainMeshGeometryBuilder.swift
-//  Created by Tristan Leblanc on 30/12/2024.
+//   /\/\__/\/\      MFSCNExtensions
+//   \/\/..\/\/      Swift Framework - v2.0
+//      (oo)
+//  MooseFactory     ©2007-2025 - Moose
+//    Software
+//  ------------------------------------------
+//  􀈿 MFSCNGridMesh.swift
+//  􀐚 MFSCNExtensions
+//  􀓣 Created by Tristan Leblanc on 30/12/2024.
 
 import SceneKit
 import MFFoundation
@@ -15,31 +15,19 @@ import MFGridUtils
 /// TerrainMeshGeometryBuilder is responsible of
 /// - hold a MeshBuffer object, allocating the underlying buffers used by
 ///
-public class MFSCNTerrainMeshGeometryBuilder {
+public class MFSCNGridMesh {
     
     public enum Errors: String, Error {
         case undeterminatedGridSize
         case cantBuildMeshBuffers
     }
     
-    public var meshInfo: MFSKMeshInfo
+    /// The mesh information.
+    /// - geometry : The grid size and the height modifiers ( heightmap and compute block )
+    public var meshInfo: MFSCNMeshInfo
+        
     
-    public var textureImage: PlatformImage? = nil
-    
-    public var heightMapImage: PlatformImage? = nil {
-        didSet {
-            if let bitmap = try? heightMapImage?.bitmap() {
-                mesh?.updateHeights(with: bitmap)
-            }
-        }
-    }
-    
-    public var heightMapBitmap: CGContext? = nil {
-        didSet {
-            guard let heightMapBitmap = heightMapBitmap else { return }
-            mesh?.updateHeights(with: heightMapBitmap)
-        }
-    }
+   // public var heightMapBitmap: CGContext? = nil
     
     var material: SCNMaterial?
     
@@ -50,7 +38,7 @@ public class MFSCNTerrainMeshGeometryBuilder {
     /// - color: the color to use for material
     /// - textureImageName: the texture image name
     
-    public init(meshInfo: MFSKMeshInfo) throws {
+    public init(meshInfo: MFSCNMeshInfo) throws {
         self.meshInfo = meshInfo
     }
     
@@ -87,22 +75,38 @@ public class MFSCNTerrainMeshGeometryBuilder {
         let geometry = SCNGeometry(sources: [vertices,normals,textureCoordinates],
                                    elements: [geometryElement])
         
-        geometry.firstMaterial = makeMaterial()
         return geometry;
     }
     
-    public func makeMaterial() -> SCNMaterial {
-        let material = SCNMaterial()
+    /// Default material provider, from info.
+    /// Subclass to create complex materials and address various textures channels
+    
+    public func makeMaterials() -> [SCNMaterial] {
+        var materials = [SCNMaterial]()
         var info = meshInfo.mappingInfo
         
-        if let computeTextureImage = info?.textureBitmap {
-            material.diffuse.contents = computeTextureImage
+        if let color = info?.color {
+            let material = SCNMaterial()
+            material.diffuse.contents = color
+            materials.append( material )
         }
-        else if let baseName = info?.textureBaseName {
+        
+        if let baseName = info?.textureBaseName {
+            let material = SCNMaterial()
             material.loadWithTextureAccessor(MFSCNTextureAccessor(baseName: baseName))
+            materials.append( material )
         }
-        material.isLitPerPixel = true
-        material.lightingModel = .physicallyBased
-        return material
+
+        if let computeTextureImage = info?.computedTextureBitmap {
+            let material = SCNMaterial()
+            material.diffuse.contents = computeTextureImage
+            materials.append( material )
+        }
+        
+        materials.forEach { material in
+            material.isLitPerPixel = true
+            material.lightingModel = .physicallyBased
+        }
+        return materials
     }
 }

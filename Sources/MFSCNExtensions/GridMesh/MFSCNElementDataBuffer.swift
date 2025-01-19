@@ -1,12 +1,12 @@
-/*--------------------------------------------------------------------------*/
-/*   /\/\/\__/\/\/\        MFSceneKitUtils                                  */
-/*   \/\/\/..\/\/\/                                                         */
-/*        |  |             MooseFactory SceneKit Extensions                 */
-/*        (oo)                                                              */
-/* MooseFactory Software                                                    */
-/*--------------------------------------------------------------------------*/
-//  ElementDataBuffer.swift
-//  Created by Tristan Leblanc on 30/12/2024.
+//   /\/\__/\/\      MFSCNExtensions
+//   \/\/..\/\/      Swift Framework - v2.0
+//      (oo)
+//  MooseFactory     ©2007-2025 - Moose
+//    Software
+//  ------------------------------------------
+//  􀈿 MFSCNElementDataBuffer.swift
+//  􀐚 MFSCNExtensions
+//  􀓣 Created by Tristan Leblanc on 30/12/2024.
 
 import Foundation
 import MFGridUtils

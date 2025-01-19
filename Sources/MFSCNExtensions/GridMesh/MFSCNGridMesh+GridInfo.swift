@@ -1,4 +1,13 @@
-//
+//   /\/\__/\/\      MFSCNExtensions
+//   \/\/..\/\/      Swift Framework - v2.0
+//      (oo)
+//  MooseFactory     ©2007-2025 - Moose
+//    Software
+//  ------------------------------------------
+//  􀈿 MFSCNGridMesh.swift
+//  􀐚 MFSCNExtensions
+//  􀓣 Created by Tristan Leblanc on 30/12/2024.
+
 //  GridInfo.swift
 //  MFSCNExtensions
 //

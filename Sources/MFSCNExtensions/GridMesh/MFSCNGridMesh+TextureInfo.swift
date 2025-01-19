@@ -32,21 +32,22 @@ public extension MFSCNTerrainMesh {
                     textureBitmap: CGContext?,
                     color: PlatformColor? = nil) {
             self.textureScale = textureScale
-            self.textureBitmap = textureBitmap
+            self.computedTextureBitmap = textureBitmap
             self.color = color
         }
         
         var textureScale: CGSize = .one
         var textureBaseName: String?
+        
         var textureBitmap: CGContext?
         
+        private(set) var computedTextureBitmap: CGContext?
+
         /// An optional diffuse color to apply over the texture
         var color: PlatformColor?
         
         /// An optional diffuse color computation block
-        /// If set, it will fill a texture with squares of different colors
-        var colorCompute: MFSKHeightComputeBlock?
-        
+        var colorCompute: MFSCNColorComputeBlock?
+
     }
-    
 }

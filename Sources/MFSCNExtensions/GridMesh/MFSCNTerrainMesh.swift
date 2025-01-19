@@ -18,14 +18,13 @@ import MFGridUtils
 
 // MARK: Publicly exposed types
 
-public typealias MFSKMeshInfo = MFSCNTerrainMesh.MeshInfo
-public typealias MFSKMeshGridInfo = MFSCNTerrainMesh.GridInfo
-public typealias MFSKMeshHeightMapInfo = MFSCNTerrainMesh.HeightMapInfo
-public typealias MFSKMeshTextureInfo = MFSCNTerrainMesh.TextureInfo
-public typealias MFSKHeightComputeBlock = (Double, MFGridLocation, CGPoint) -> Double
-public typealias MFSKColorComputeBlock = (Double, MFGridLocation, CGPoint) -> PlatformColor
-public typealias MFSKGridComputeBlock = (Int, MFGridLocation, CGPoint, CGPoint) -> Double
-
+public typealias MFSCNMeshInfo = MFSCNTerrainMesh.MeshInfo
+public typealias MFSCNMeshGridInfo = MFSCNTerrainMesh.GridInfo
+public typealias MFSCNMeshHeightMapInfo = MFSCNTerrainMesh.HeightMapInfo
+public typealias MFSCNMeshTextureInfo = MFSCNTerrainMesh.TextureInfo
+public typealias MFSCNHeightComputeBlock = (Double, MFGridLocation, CGPoint) -> Double
+public typealias MFSCNColorComputeBlock = (Double, MFGridLocation, CGPoint) -> PlatformColor
+//public typealias MFSKGridComputeBlock = (Int, MFGridLocation, CGPoint, CGPoint) -> Double
 
 /// MFSCNTerrainMesh Library Scope
 
