@@ -14,16 +14,15 @@ import MFGridUtils
 import MFFoundation
 
 /// Responsible of allocating buffers to hold the mesh data
-///
+
 public class MFSCNMeshBuffer {
-        
+    
     /// The errors that can be thrown by the MeshBuffer
     public enum Errors: String, Error {
         case cantFindImageBitmapByName
         
         case notEnoughMemoryToAllocateVerticesBuffer
         case notEnoughMemoryToAllocateIndicesBuffer
-        
         case notEnoughMemoryToAllocateTexturesBuffer
         case notEnoughMemoryToAllocateNormalsBuffer
     }
@@ -57,11 +56,12 @@ public class MFSCNMeshBuffer {
     // Set if textureInfo is set
     public private(set) var textureCoordinates: MFSCNElementDataBuffer<TexturePoint>?
     
-    public private(set) var colors: MFSCNElementDataBuffer<PlatformColor>?
+    public private(set) var colors: MFSCNElementDataBuffer<SCNVector4>?
     
     // Swift Array accessor
     
     var verticesArray: [SCNVector3] { vertices?.array ?? [] }
+    
     var normalsArray: [SCNVector3] { normals?.array ?? [] }
     
     /// The resolution of the grid, in number of cells
@@ -72,7 +72,7 @@ public class MFSCNMeshBuffer {
     
     // The grid size
     var squaresGridSize: MFGridSize { meshInfo.gridInfo.gridSize }
-
+    
     // The vertices grid size
     var verticesGridSize: MFGridSize { meshInfo.gridInfo.verticesGridSize }
     
@@ -100,7 +100,8 @@ public class MFSCNMeshBuffer {
         // a flat plane
         let heightFromHeightMap: MFSCNHeightComputeBlock = meshInfo.heightMapInfo?.heightComputeBlock
         ?? { _, _, _ in return 0.0 }
-
+        
+        
         vertices = try makeVerticesArray() { value, gridLoc, fracLoc in
             let double = value / Double(UInt8.max)
             return heightFromHeightMap(double, gridLoc, fracLoc)
@@ -108,39 +109,44 @@ public class MFSCNMeshBuffer {
         
         normals = try makeNormalsArray()
         indices = try makeIndices()
+        colors = try makeColorBuffer()
+        
         textureCoordinates = try makeTexturesBuffer()
+        
     }
     
     var updating: Bool = false
     
     /// This function recomputes the buffers
     
-    func updateBuffers() throws {
-        
-        if updating {
-            return
-        }
-        
-        updating = true
-        let meshInfo = meshInfo
-        
-        // If the height compute block is not set, we provide a simple block that returns
-        // a flat plane
-        let heightFromHeightMap: MFSCNHeightComputeBlock =
-        meshInfo.heightMapInfo?.heightComputeBlock
-        ?? { _, _, _ in return 0.0 }
-
-        self.vertices = try makeVerticesArray() { value, gridLoc, fracLoc in
-            let double = value / Double(UInt8.max)
-            return heightFromHeightMap(double, gridLoc, fracLoc)
-        }
-        
-        normals = try makeNormalsArray()
-        indices = try makeIndices()
-        textureCoordinates = try makeTexturesBuffer()
-        
-        updating = false
-    }
+//    func updateBuffers() throws {
+//        
+//        if updating {
+//            return
+//        }
+//        
+//        updating = true
+//        let meshInfo = meshInfo
+//        
+//        // If the height compute block is not set, we provide a simple block that returns
+//        // a flat plane
+//        let heightFromHeightMap: MFSCNHeightComputeBlock =
+//        meshInfo.heightMapInfo?.heightComputeBlock
+//        ?? { _, _, _ in return 0.0 }
+//        
+//        self.vertices = try makeVerticesArray() { value, gridLoc, fracLoc in
+//            let double = value / Double(UInt8.max)
+//            return heightFromHeightMap(double, gridLoc, fracLoc)
+//        }
+//        
+//        normals = try makeNormalsArray()
+//        indices = try makeIndices()
+//        textureCoordinates = try makeTexturesBuffer()
+//        colors = try makeColorBuffer()
+//
+//        updating = false
+//    }
+    
     /// Allocates the normals buffer
     
     func makeNormalsArray() throws -> MFSCNElementDataBuffer<SCNVector3> {
@@ -155,7 +161,7 @@ public class MFSCNMeshBuffer {
     }
     
     /// Allocates the indices buffer
-
+    
     private func makeIndices() throws -> MFSCNElementDataBuffer<SideTrianglesIndice> {
         do {
             return try MFSCNElementDataBuffer<SideTrianglesIndice>(gridSize: squaresGridSize) {
@@ -186,14 +192,12 @@ public class MFSCNMeshBuffer {
     }
     
     /// Allocates the vertices buffer
-
-//    func updateHeights(with HeightMap: CGContext) {
-//        
-//    }
     
     func makeVerticesArray(heightFromHeightMap: @escaping MFSCNHeightComputeBlock) throws -> MFSCNElementDataBuffer<SCNVector3> {
         do {
+            
             let cellSize = meshInfo.gridInfo.cellSize
+            
             return try MFSCNElementDataBuffer<SCNVector3>(gridSize: verticesGridSize) { scanner, data in
                 
                 var height: CGFloat = 0
@@ -201,15 +205,14 @@ public class MFSCNMeshBuffer {
                 // TODO: Optimize to use cell computed values
                 
                 let fractionalLoc = scanner.cell.gridLocation.fractionalLocation(for: self.verticesGridSize)
-
+                
                 if let info = self.meshInfo.heightMapInfo, let heightMapBitmap = info.heightMapBitmap {
                     if let comps = heightMapBitmap.colorComponents(fractionalX: fractionalLoc.x,
                                                                    fractionalY: fractionalLoc.y) {
                         let value = 1 - CGFloat( comps.r )
                         height = heightFromHeightMap(value, scanner.cell.gridLocation, fractionalLoc)
                     }
-                }
-                else {
+                } else {
                     height = heightFromHeightMap(0, scanner.cell.gridLocation, fractionalLoc)
                 }
                 
@@ -226,13 +229,13 @@ public class MFSCNMeshBuffer {
     }
     
     /// Allocates the texture coordinates buffer
-
+    
     func makeTexturesBuffer() throws -> MFSCNElementDataBuffer<TexturePoint> {
         let textureScale: CGSize = meshInfo.mappingInfo?.textureScale ?? CGSize.one
         let cellSize = meshInfo.gridInfo.cellSize
         let gridSize = meshInfo.gridInfo.gridSize
         let gridSizef = gridSize.asCGFloat
-
+        
         do {
             
             return try MFSCNElementDataBuffer<TexturePoint>(gridSize: verticesGridSize, cellSize: cellSize) { scanner, data in
@@ -255,9 +258,18 @@ public class MFSCNMeshBuffer {
             throw(Errors.cantFindImageBitmapByName)
         }
     }
-    //        colors = ElementDataBuffer<SCNColor>(gridSize: verticesGridSize) { index, location in
-    //            return SCNColor.clear
-    //        }
+    
+    /// Builds the color buffer
+
+    func makeColorBuffer() throws -> MFSCNElementDataBuffer<SCNVector4>? {
+        guard let colorBlock = meshInfo.mappingInfo?.colorComputeBlock else { return nil }
+        let size = meshInfo.gridInfo.verticesGridSize
+        let vertices = verticesArray
+        return try MFSCNElementDataBuffer<SCNVector4>(gridSize: verticesGridSize) { scanner, data in
+            colorBlock(0, scanner.cell.gridLocation, .zero, vertices[scanner.cell.index])
+        }
+    }
+    
 }
 
 

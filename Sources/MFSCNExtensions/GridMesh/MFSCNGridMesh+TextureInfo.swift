@@ -21,11 +21,13 @@ public extension MFSCNTerrainMesh {
     public struct TextureInfo {
         
         public init(textureScale: CGSize = .one,
-                    textureBaseName: String?,
-                    color: PlatformColor? = nil) {
+                    textureBaseName: String? = nil,
+                    color: PlatformColor? = nil,
+                    colorComputeBlock: MFSCNColorComputeBlock? = nil) {
             self.textureScale = textureScale
             self.textureBaseName = textureBaseName
             self.color = color
+            self.colorComputeBlock = colorComputeBlock
         }
         
         public init(textureScale: CGSize = .one,
@@ -37,8 +39,9 @@ public extension MFSCNTerrainMesh {
         }
         
         var textureScale: CGSize = .one
-        var textureBaseName: String?
         
+        var textureBaseName: String?
+
         var textureBitmap: CGContext?
         
         private(set) var computedTextureBitmap: CGContext?
@@ -47,7 +50,7 @@ public extension MFSCNTerrainMesh {
         var color: PlatformColor?
         
         /// An optional diffuse color computation block
-        var colorCompute: MFSCNColorComputeBlock?
+        var colorComputeBlock: MFSCNColorComputeBlock?
 
     }
 }

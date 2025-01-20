@@ -12,9 +12,19 @@ import SceneKit
 import MFFoundation
 import MFGridUtils
 
-/// TerrainMeshGeometryBuilder is responsible of
-/// - hold a MeshBuffer object, allocating the underlying buffers used by
-///
+public extension PlatformColor {
+    
+    var asSCNVector4: SCNVector4 {
+        SCNVector4(x: redComponent, y: greenComponent, z: blueComponent, w: alphaComponent)
+    }
+    
+    var asSCNVector3: SCNVector3 {
+        SCNVector3(x: redComponent, y: greenComponent, z: blueComponent)
+    }
+}
+
+/// TerrainMeshGeometryBuilder is responsible of holding MeshBuffer datas.
+
 public class MFSCNGridMesh {
     
     public enum Errors: String, Error {
@@ -24,10 +34,10 @@ public class MFSCNGridMesh {
     
     /// The mesh information.
     /// - geometry : The grid size and the height modifiers ( heightmap and compute block )
+    
     public var meshInfo: MFSCNMeshInfo
         
-    
-   // public var heightMapBitmap: CGContext? = nil
+    // public var heightMapBitmap: CGContext? = nil
     
     var material: SCNMaterial?
     
@@ -72,12 +82,29 @@ public class MFSCNGridMesh {
             bytesPerIndex: MemoryLayout<CInt>.size
         )
         
-        let geometry = SCNGeometry(sources: [vertices,normals,textureCoordinates],
-                                   elements: [geometryElement])
         
+        // Colors
+        
+        var colorSource: SCNGeometrySource? = nil
+
+        if let colors = mesh.colors {
+            colorSource = SCNGeometrySource(data: colors.data,
+                                                semantic: .color,
+                                                vectorCount: colors.numberOfElements,
+                                                usesFloatComponents: true,
+                                                componentsPerVector: 4,
+                                                bytesPerComponent: MemoryLayout<SCNFloat>.size,
+                                                dataOffset: 0,
+                                                dataStride: MemoryLayout<SCNVector4>.stride)
+        }
+        
+        let sources = [vertices, normals, textureCoordinates, colorSource].compactMap { $0 }
+        
+        let geometry = SCNGeometry(sources: sources,
+                                   elements: [geometryElement])
         return geometry;
     }
-    
+
     /// Default material provider, from info.
     /// Subclass to create complex materials and address various textures channels
     
@@ -109,4 +136,5 @@ public class MFSCNGridMesh {
         }
         return materials
     }
+    
 }

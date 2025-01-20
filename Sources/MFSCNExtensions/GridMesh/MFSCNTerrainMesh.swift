@@ -10,6 +10,7 @@
 
 import Foundation
 import CoreGraphics
+import SceneKit
 
 import MFFoundation
 import MFGridUtils
@@ -23,7 +24,8 @@ public typealias MFSCNMeshGridInfo = MFSCNTerrainMesh.GridInfo
 public typealias MFSCNMeshHeightMapInfo = MFSCNTerrainMesh.HeightMapInfo
 public typealias MFSCNMeshTextureInfo = MFSCNTerrainMesh.TextureInfo
 public typealias MFSCNHeightComputeBlock = (Double, MFGridLocation, CGPoint) -> Double
-public typealias MFSCNColorComputeBlock = (Double, MFGridLocation, CGPoint) -> PlatformColor
+
+public typealias MFSCNColorComputeBlock = (Double, MFGridLocation, CGPoint, SCNVector3) -> SCNVector4
 //public typealias MFSKGridComputeBlock = (Int, MFGridLocation, CGPoint, CGPoint) -> Double
 
 /// MFSCNTerrainMesh Library Scope

@@ -10,30 +10,48 @@ import MFGridUtils
 
 public class MFSCNGridMeshNode: SCNNode {
     
+    public var meshNode: SCNNode!
+
     public var grid: MFGrid = MFGrid(gridSize: MFGridSize.init(size: 20))
     
-    public init(grid: MFGrid) {
+    /// The most simple mesh creation function.
+    ///
+    public init(grid: MFGrid,
+                heightComputeBlock: MFSCNHeightComputeBlock? = nil,
+                colorComputeBlock: MFSCNColorComputeBlock? = nil) {
         self.grid = grid
         super.init()
-        buildMesh()
+        buildMesh(heightComputeBlock: heightComputeBlock,
+                  colorComputeBlock: colorComputeBlock)
     }
-    
+
     public required init?(coder: NSCoder) {
         super.init(coder: coder)
         buildMesh()
     }
     
-    public lazy var meshNode = MFSCNGridMeshNode.makeMeshNode(with: grid)
+    /// Creates the mesh geometry node
+    ///
+    /// The geometry noe is used to correctly center and rotate the mesh.
     
-    static func makeMeshNode(with grid: MFGrid) -> SCNNode {
+    static func makeMeshNode(with grid: MFGrid,
+                             heightComputeBlock: MFSCNHeightComputeBlock? = nil,
+                             colorComputeBlock: MFSCNColorComputeBlock? = nil) -> SCNNode {
         let gridInfo = MFSCNMeshGridInfo(gridSize: grid.gridSize,
                                          cellSize: grid.cellSize,
                                          elevation: 0)
         do {
-            let meshInfo = MFSCNMeshInfo(gridInfo: gridInfo)
+            
+            let heightMapInfo = MFSCNMeshHeightMapInfo(heightComputeBlock: heightComputeBlock)
+            
+            let textureInfo = MFSCNMeshTextureInfo(colorComputeBlock: colorComputeBlock)
+            
+            let meshInfo = MFSCNMeshInfo(gridInfo: gridInfo,
+                                         heightMapInfo: heightMapInfo,
+                                         mappingInfo: textureInfo)
             let mesh = try MFSCNGridMesh(meshInfo: meshInfo)
             let geometry = try mesh.makeGeometry()
-            geometry.materials.first?.fillMode = .lines
+
             return SCNNode(geometry: geometry)
         }
         catch {
@@ -41,9 +59,13 @@ public class MFSCNGridMeshNode: SCNNode {
         }
     }
     
-    func buildMesh() {
+    func buildMesh(heightComputeBlock: MFSCNHeightComputeBlock? = nil,
+                   colorComputeBlock: MFSCNColorComputeBlock? = nil) {
+        let meshNode = MFSCNGridMeshNode.makeMeshNode(with: grid,
+                                                      heightComputeBlock: heightComputeBlock,
+                                                      colorComputeBlock: colorComputeBlock)
+        self.meshNode = meshNode
         addChildNode(meshNode)
-        
         recenterMesh()
     }
     

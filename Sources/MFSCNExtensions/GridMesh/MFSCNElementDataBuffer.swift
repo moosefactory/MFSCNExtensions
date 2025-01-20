@@ -15,9 +15,26 @@ import MFGridUtils
 
 public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
     
+    /// Thrown if buffer can't be created
     enum Errors: Error {
         case memoryError
     }
+    
+    /// Buffer pointer
+    
+    private var buffer: UnsafeMutableRawPointer?
+    
+    public private(set) var elementsArray: UnsafeMutablePointer<T>!
+    
+    public let numberOfElements: Int
+    
+    /// Returns the needed capacity to allocate the buffer
+    
+    public var neededCapacity: Int { numberOfElements * MemoryLayout<T>.stride }
+    
+    public private(set) var allocatedCapacity: Int = 0
+    
+    /// Populates a one dimension buffer
     
     public var description: String {
         [
@@ -28,6 +45,8 @@ public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
         ].joined(separator: "\r")
     }
     
+    /// Returns the buffer as Data
+    
     public var data: Data {
         guard let buffer = buffer else {
             return Data()
@@ -35,8 +54,9 @@ public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
         return NSData(bytesNoCopy: buffer, length: neededCapacity, freeWhenDone: true) as Data
     }
     
+    /// Returns the buffer as array
+    
     var array: [T] {
-        
         guard let elementsPtr = buffer?.bindMemory(to: T.self, capacity: numberOfElements) else {
             return []
         }
@@ -44,15 +64,7 @@ public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
         return Array(elementsArray)
     }
     
-    private var buffer: UnsafeMutableRawPointer?
-    
-    public private(set) var elementsArray: UnsafeMutablePointer<T>!
-    
-    public let numberOfElements: Int
-    
-    /// Returns the needed capacity to allocate the buffer
-    public var neededCapacity: Int { numberOfElements * MemoryLayout<T>.stride }
-    public private(set) var allocatedCapacity: Int = 0
+    /// Populates a one dimension buffer
     
     static func populate(buffer: UnsafeMutableRawPointer,
                          numberOfElements: Int,
@@ -63,12 +75,12 @@ public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
         }
     }
     
+    /// Populates a two dimension buffer
+    
     static func populateGrid(buffer: UnsafeMutableRawPointer,
                              gridSize: MFGridSize,
                              elementProcessor: @escaping MFDataGridProcessorClosure<T>) {
-        
         let bufferArray = buffer.bindMemory(to: T.self, capacity: gridSize.numberOfCells)
-        
         gridSize.scanner().cellScan { scanner in
             if let data = elementProcessor(scanner, nil) {
                 bufferArray[scanner.cell.index] = data
@@ -76,9 +88,11 @@ public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
         }
     }
     
+    /// Populates a two dimension buffer
+    
     static func populateGeoGrid(buffer: UnsafeMutableRawPointer,
-                                      gridSize: MFGridSize,
-                                      cellSize: CGSize,
+                                gridSize: MFGridSize,
+                                cellSize: CGSize,
                                 elementProcessor: @escaping MFDataGridProcessorClosure<T>) {
         let bufferArray = buffer.bindMemory(to: T.self, capacity: gridSize.numberOfCells)
         gridSize.scanner().cellScan { scanner in
@@ -93,12 +107,10 @@ public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
     
     public init(gridSize: MFGridSize, elementProcessor: @escaping MFDataGridProcessorClosure<T>) throws {
         self.numberOfElements = gridSize.numberOfCells
-        
         let newBuffer: UnsafeMutableRawPointer = try allocateBuffer()
-        
         MFSCNElementDataBuffer.populateGrid(buffer: newBuffer,
-                                       gridSize: gridSize,
-                                       elementProcessor: elementProcessor)
+                                            gridSize: gridSize,
+                                            elementProcessor: elementProcessor)
     }
     
     /// Creates a data buffer by processing cell index,
@@ -112,14 +124,15 @@ public class MFSCNElementDataBuffer<T>: CustomStringConvertible {
         let newBuffer: UnsafeMutableRawPointer = try allocateBuffer()
         
         MFSCNElementDataBuffer.populateGeoGrid(buffer: newBuffer,
-                                                gridSize: gridSize,
-                                                cellSize: cellSize,
-                                                elementProcessor: elementProcessor)
+                                               gridSize: gridSize,
+                                               cellSize: cellSize,
+                                               elementProcessor: elementProcessor)
     }
     
     // MARK: - Private Functions
     
     /// Allocate memory if possible, throws an error if not
+    
     private func allocateBuffer() throws -> UnsafeMutableRawPointer {
         
         guard let newBuffer = malloc(neededCapacity) else {
