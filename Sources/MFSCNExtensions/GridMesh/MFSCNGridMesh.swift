@@ -137,4 +137,18 @@ public class MFSCNGridMesh {
         return materials
     }
     
+    public func makeMaterial() -> SCNMaterial {
+        let material = SCNMaterial()
+        var info = meshInfo.mappingInfo
+        
+        if let computeTextureImage = info?.textureBitmap {
+            material.diffuse.contents = computeTextureImage
+        }
+        else if let baseName = info?.textureBaseName {
+            material.loadWithTextureAccessor(MFSCNTextureAccessor(baseName: baseName))
+        }
+        material.isLitPerPixel = true
+        material.lightingModel = .physicallyBased
+        return material
+    }
 }
