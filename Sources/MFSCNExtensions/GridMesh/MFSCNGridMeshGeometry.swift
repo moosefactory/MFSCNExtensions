@@ -14,18 +14,31 @@ import MFGridUtils
 
 public extension PlatformColor {
     
+    /// RGBA To SCNVector4
     var asSCNVector4: SCNVector4 {
-        SCNVector4(x: redComponent, y: greenComponent, z: blueComponent, w: alphaComponent)
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        
+        self.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return SCNVector4(x: SCNFloat(r), y: SCNFloat(g), z: SCNFloat(b), w: SCNFloat(a))
     }
     
+    /// RGB3 To SCNVector3
     var asSCNVector3: SCNVector3 {
-        SCNVector3(x: redComponent, y: greenComponent, z: blueComponent)
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        self.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return SCNVector3(x: SCNFloat(r), y: SCNFloat(g), z: SCNFloat(b))
     }
 }
 
 /// TerrainMeshGeometryBuilder is responsible of holding MeshBuffer datas.
 
-public class MFSCNGridMesh {
+public class MFSCNGridMeshGeometry {
     
     public enum Errors: String, Error {
         case undeterminatedGridSize
@@ -110,7 +123,7 @@ public class MFSCNGridMesh {
     
     public func makeMaterials() -> [SCNMaterial] {
         var materials = [SCNMaterial]()
-        var info = meshInfo.mappingInfo
+        let info = meshInfo.mappingInfo
         
         if let color = info?.color {
             let material = SCNMaterial()
@@ -139,7 +152,7 @@ public class MFSCNGridMesh {
     
     public func makeMaterial() -> SCNMaterial {
         let material = SCNMaterial()
-        var info = meshInfo.mappingInfo
+        let info = meshInfo.mappingInfo
         
         if let computeTextureImage = info?.textureBitmap {
             material.diffuse.contents = computeTextureImage

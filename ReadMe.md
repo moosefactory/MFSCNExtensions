@@ -14,18 +14,19 @@ Camera switch helper.
 
 Texture images loader
 
-### MFSCNTextureAccessor
-
-Texture images loader
-
 ## MFGridMesh
 
 ### Usage:
 
+Example code from the demo project:
+<https://github.com/moosefactory/MFGridMeshLab>
+
+#### Add a mesh object
+
 To quickly try the mesh object, create a new multiplatform SceneKit based game project,
 you know, the one with the forever rotating plane.
 
-Then do as following to add a simple quare mesh node:
+Then do as following to add a simple square mesh node:
 
 ```
 
@@ -48,21 +49,34 @@ Build and run.
 
 ![MeshLabScreenshot Image](MeshLabScreenshot.jpg)
 
+
+### MFSCNGridMeshNode
+
+A Mesh scene kit node. 
+
 ### MFSCNElementDataBuffer
 
 Buffer helper.
 
 ### MFSCNMeshBuffer
 
-Mesh Buffer
+The Mesh Buffer is responsible of allocating and dealing with raw buffers.
 
-### MFSCNTerrainMesh
+### MFSCNMeshBuffer
 
 The library main file
 
-### MFSCNTerrainMeshGeometryBuilder
+### MFSCNGridMeshGeometry
 
 Builds SceneKit nodes using a MFSCNMeshBuffer
+
+### MFSCNGridMesh+MeshInfo
+
+The structures passed to the Mesh object to set its properties:
+
+#### MFSCNGridMesh+TextureInfo
+#### MFSCNGridMesh+HeightMapInfo
+#### MFSCNGridMesh+GridInfo
 
 --
 

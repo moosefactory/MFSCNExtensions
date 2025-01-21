@@ -233,23 +233,24 @@ public class MFSCNMeshBuffer {
     func makeTexturesBuffer() throws -> MFSCNElementDataBuffer<TexturePoint> {
         let textureScale: CGSize = meshInfo.mappingInfo?.textureScale ?? CGSize.one
         let cellSize = meshInfo.gridInfo.cellSize
-        let gridSize = meshInfo.gridInfo.gridSize
-        let gridSizef = gridSize.asCGFloat
         
         do {
             
             return try MFSCNElementDataBuffer<TexturePoint>(gridSize: verticesGridSize, cellSize: cellSize) { scanner, data in
-                let cellFractionalLocation = scanner.cell.gridLocation.fractionalLocation(for: gridSize)
+                let f = scanner.cell.fractionalLocation
+                // Not sure why I have to do this
+                // It looks like if we go to 1.0, SceneKit does a cubic mapping or something.
+                // TODO: investigate further
                 let frac = 0.999
-                let texLocX = (cellFractionalLocation.x * frac)
-                let texLocY = (1.0 - cellFractionalLocation.y) * frac
+                let texLocX = (f.x * frac) * textureScale.width
+                let texLocY = (1.0 - f.y) * frac * textureScale.height
                 var mx: Double = 1
                 var my: Double = 1
                 let texLocXMod = modf(texLocX, &mx)
                 let texLocYMod = modf(texLocY, &my)
                 let point = TexturePoint(
-                    x: CFloat(texLocXMod), //modf(texLocX, &mx)) ,
-                    y: CFloat(texLocYMod) //modf(texLocY, &my))
+                    x: CFloat(texLocXMod),
+                    y: CFloat(texLocYMod)
                 )
                 return point
             }
@@ -263,7 +264,6 @@ public class MFSCNMeshBuffer {
 
     func makeColorBuffer() throws -> MFSCNElementDataBuffer<SCNVector4>? {
         guard let colorBlock = meshInfo.mappingInfo?.colorComputeBlock else { return nil }
-        let size = meshInfo.gridInfo.verticesGridSize
         let vertices = verticesArray
         return try MFSCNElementDataBuffer<SCNVector4>(gridSize: verticesGridSize) { scanner, data in
             colorBlock(0, scanner.cell.gridLocation, .zero, vertices[scanner.cell.index])

@@ -16,12 +16,12 @@ import CoreGraphics
 
 import MFFoundation
 
-public extension MFSCNTerrainMesh {
+public extension MFGridMesh {
     
     /// HeightMapInfo contains elevation mapping information.
     /// ( The Y coordinate)
     
-    public struct HeightMapInfo {
+    struct HeightMapInfo {
         
         public var height = 1.0
         

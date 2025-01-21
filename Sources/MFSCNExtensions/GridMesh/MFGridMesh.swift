@@ -19,10 +19,10 @@ import MFGridUtils
 
 // MARK: Publicly exposed types
 
-public typealias MFSCNMeshInfo = MFSCNTerrainMesh.MeshInfo
-public typealias MFSCNMeshGridInfo = MFSCNTerrainMesh.GridInfo
-public typealias MFSCNMeshHeightMapInfo = MFSCNTerrainMesh.HeightMapInfo
-public typealias MFSCNMeshTextureInfo = MFSCNTerrainMesh.TextureInfo
+public typealias MFSCNMeshInfo = MFGridMesh.MeshInfo
+public typealias MFSCNMeshGridInfo = MFGridMesh.GridInfo
+public typealias MFSCNMeshHeightMapInfo = MFGridMesh.HeightMapInfo
+public typealias MFSCNMeshTextureInfo = MFGridMesh.TextureInfo
 public typealias MFSCNHeightComputeBlock = (Double, MFGridLocation, CGPoint) -> Double
 
 public typealias MFSCNColorComputeBlock = (Double, MFGridLocation, CGPoint, SCNVector3) -> SCNVector4
@@ -30,7 +30,7 @@ public typealias MFSCNColorComputeBlock = (Double, MFGridLocation, CGPoint, SCNV
 
 /// MFSCNTerrainMesh Library Scope
 
-public struct MFSCNTerrainMesh {
+public struct MFGridMesh {
     
     /// The full structure to define geometry and texture
     public struct MeshInfo {
@@ -40,9 +40,9 @@ public struct MFSCNTerrainMesh {
         
         var useTextureSizeIfPossible: Bool = false
         
-        public init(gridInfo: MFSCNTerrainMesh.GridInfo,
-                    heightMapInfo: MFSCNTerrainMesh.HeightMapInfo? = nil,
-                    mappingInfo: MFSCNTerrainMesh.TextureInfo? = nil,
+        public init(gridInfo: MFGridMesh.GridInfo,
+                    heightMapInfo: MFGridMesh.HeightMapInfo? = nil,
+                    mappingInfo: MFGridMesh.TextureInfo? = nil,
                     useTextureSizeIfPossible: Bool = false) {
             self.gridInfo = gridInfo
             self.heightMapInfo = heightMapInfo

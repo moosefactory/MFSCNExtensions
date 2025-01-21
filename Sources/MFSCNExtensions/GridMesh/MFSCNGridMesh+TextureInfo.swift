@@ -11,14 +11,14 @@ import CoreGraphics
 // For platform color
 import MFFoundation
 
-public extension MFSCNTerrainMesh {
+public extension MFGridMesh {
     
     /// TextureInfo contains basic texture mapping information.
     ///
     /// TextureInfo object can be nil, in which case the user is responsible
     /// of applying the material later.
     
-    public struct TextureInfo {
+    struct TextureInfo {
         
         public init(textureScale: CGSize = .one,
                     textureBaseName: String? = nil,

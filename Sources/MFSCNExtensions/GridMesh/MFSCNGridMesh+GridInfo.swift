@@ -18,7 +18,7 @@ import Foundation
 import MFFoundation
 import MFGridUtils
 
-public extension MFSCNTerrainMesh {
+public extension MFGridMesh {
     
     /// The structure to pass to create a minimal mesh,
     /// resulting in a flat grid.
@@ -27,9 +27,9 @@ public extension MFSCNTerrainMesh {
     ///
     /// It exposes some convenience accessors to work vertices
     
-    public struct GridInfo {
+    struct GridInfo {
         
-        public var gridSize = try! MFGridSize(size: 100)
+        public var gridSize = MFGridSize(size: 100)
         public var cellSize = CGSize.one
         
         public var elevation: CGFloat = 0.0

@@ -49,7 +49,7 @@ public class MFSCNGridMeshNode: SCNNode {
             let meshInfo = MFSCNMeshInfo(gridInfo: gridInfo,
                                          heightMapInfo: heightMapInfo,
                                          mappingInfo: textureInfo)
-            let mesh = try MFSCNGridMesh(meshInfo: meshInfo)
+            let mesh = try MFSCNGridMeshGeometry(meshInfo: meshInfo)
             let geometry = try mesh.makeGeometry()
 
             return SCNNode(geometry: geometry)
